@@ -1,5 +1,12 @@
 #include "hls.h"
 
+/**
+ * error - Print the errors with the app name and the filename
+ *
+ * @info: General information and state about the application
+ * @filename: Name of the file who cause the error
+ * Return: Errno code
+ **/
 int error(general_t info, char *filename)
 {
 	char *buff;
