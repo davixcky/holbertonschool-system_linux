@@ -78,7 +78,6 @@ parent_node_t *get_path_nodes(general_t *info, char *path)
 {
 	parent_node_t *parent;
 	struct dirent *read;
-	file_node_t *current;
 
 	if (path == NULL)
 		return (NULL);
@@ -88,7 +87,6 @@ parent_node_t *get_path_nodes(general_t *info, char *path)
 		return (NULL);
 
 	parent->dir_stream = opendir(path);
-
 	switch (errno)
 	{
 		case ENOTDIR: /* the filename is not a directory, it's a file */
@@ -104,15 +102,15 @@ parent_node_t *get_path_nodes(general_t *info, char *path)
 	parent->filename = path;
 	parent->head_file = NULL;
 
-	current = NULL;
+	parent->next = NULL;
+	parent->prev = NULL;
 
 	while ((read = readdir(parent->dir_stream)) != NULL)
 	{
 		if (read->d_name[0] == '.')
 			continue;
 
-		current = create_file_node(read, parent->filename);
-		sorted_insert(&parent->head_file, current);
+		sorted_insert(&parent->head_file, create_file_node(read, parent->filename));
 	}
 
 	return (parent);
