@@ -66,12 +66,15 @@ typedef struct file_node
  * @filename: Unique name that identify the parent
  * @dir_stream: Pointer to the main dir
  * @head_file: Head of the children nodes
+ * @next: Pointer to the next parent
  **/
 typedef struct parent_node
 {
 	char *filename;
 	DIR *dir_stream;
 	file_node_t *head_file;
+	struct parent_node *next;
+	struct parent_node *prev;
 } parent_node_t;
 
 /**
@@ -112,6 +115,8 @@ void free_directories(parent_node_t *parent);
 file_node_t *create_file_node(struct dirent *dir, char *base_path);
 void print_directory(parent_node_t *parent);
 void sorted_insert(file_node_t **head, file_node_t *new_node);
+void sorted_insert2(parent_node_t **head, parent_node_t *new_node);
+void print_parent_node(parent_node_t *node, int is_multi_file);
 
 /* text utils */
 int _strlen(char *s);
