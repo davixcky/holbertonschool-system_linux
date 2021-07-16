@@ -35,8 +35,11 @@ file_node_t *create_file_node(struct dirent *dir, char *base_path)
 void get_node_info(file_node_t *node, char *base_path)
 {
 	struct stat sb;
+	struct passwd *user_info;
+	struct group *group_info;
 
 	char *path;
+	char *buff_user, *buff_group;
 
 	path = base_path == NULL ?
 		   node->filename :
@@ -44,9 +47,23 @@ void get_node_info(file_node_t *node, char *base_path)
 
 	lstat(path, &sb);
 
+	user_info = getpwuid(sb.st_uid);
+	if (user_info == NULL)
+	{
+		buff_user = malloc(10 * sizeof(char));
+		_itoa(sb.st_uid, buff_user, 10);
+	}
+
+	group_info = getgrgid(sb.st_gid);
+	if (group_info == NULL)
+	{
+		buff_group = malloc(10 * sizeof(char));
+		_itoa(sb.st_gid, buff_group, 10);
+	}
+
 	node->node_type = get_node_type(sb.st_mode);
-	node->group_name = getgrgid(sb.st_gid)->gr_name;
-	node->owner_name = getpwuid(sb.st_uid)->pw_name;
+	node->group_name = group_info != NULL ? group_info->gr_name : buff_group;
+	node->owner_name = user_info != NULL ? user_info->pw_name : buff_user;
 	node->last_modification = ctime(&(sb.st_mtime));
 	node->size = sb.st_size;
 	node->number_links = (long) sb.st_nlink;

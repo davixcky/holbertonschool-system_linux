@@ -11,4 +11,4 @@ add_executable(0x00_ls
         hls.c
         hls.h
         text.c
-        file_node.c utils.c)
+        file_node.c utils.c text2.c)

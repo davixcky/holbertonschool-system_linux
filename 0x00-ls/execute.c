@@ -110,6 +110,13 @@ void free_directories(parent_node_t *parent)
 		free(aux->other_permissions);
 		free(aux->group_permissions);
 		free(aux->filename_upper);
+
+		if (aux->group_name && _isdigit(aux->group_name[0]))
+			free(aux->group_name);
+
+		if (aux->owner_name && _isdigit(aux->owner_name[0]))
+			free(aux->owner_name);
+
 		free(aux);
 	}
 

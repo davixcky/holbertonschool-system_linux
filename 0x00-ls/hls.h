@@ -119,6 +119,8 @@ int _strcmp(char *s1, char *s2);
 int is_lowercase(char c);
 char *string_toupper(char *s);
 char *_strdup(char *str);
+char *_itoa(int num, char *str, int base);
+int _isdigit(int c);
 
 /* error handling */
 int error(general_t info, char *filename);
