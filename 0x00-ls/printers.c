@@ -33,5 +33,20 @@ void print_directory(parent_node_t *parent)
  */
 void print_files(general_t *info)
 {
+	file_node_t *tmp, *aux;
+
 	print_list(info->head_files);
+	if (info->head_files)
+		printf("\n");
+
+
+	tmp = info->head_files;
+	while (tmp != NULL)
+	{
+		aux = tmp->next;
+
+		free(tmp->filename_upper);
+		free(tmp);
+		tmp = aux;
+	}
 }

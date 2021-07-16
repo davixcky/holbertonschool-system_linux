@@ -92,8 +92,8 @@ parent_node_t *get_path_nodes(general_t *info, char *path)
 	switch (errno)
 	{
 		case ENOTDIR: /* the filename is not a directory, it's a file */
-			sorted_insert(&info->head_files,
-						  create_file_node(path, ""));
+			sorted_insert(&info->head_files, create_file_node(path, ""));
+			closedir(parent->dir_stream);
 			free(parent);
 			return (NULL);
 		case ENOENT: /* the filename doesn't exists */
@@ -135,16 +135,22 @@ void free_directories(parent_node_t *parent)
 		aux = head;
 		head = head->next;
 
-		free(aux->user_permissions);
-		free(aux->other_permissions);
-		free(aux->group_permissions);
+	/**
+	 * free(aux->user_permissions);
+	 * free(aux->other_permissions);
+	 * free(aux->group_permissions);
+	 **/
 		free(aux->filename_upper);
 
-		if (aux->group_name && _isdigit(aux->group_name[0]))
-			free(aux->group_name);
+	/**
+	 * if (aux->group_name && _isdigit(aux->group_name[0]))
+	 * free(aux->group_name);
+	 **/
 
-		if (aux->owner_name && _isdigit(aux->owner_name[0]))
-			free(aux->owner_name);
+	/**
+	 * if (aux->owner_name && _isdigit(aux->owner_name[0]))
+	 * free(aux->owner_name);
+	 **/
 
 		free(aux);
 	}
