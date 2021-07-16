@@ -67,6 +67,7 @@ typedef struct file_node
  * @dir_stream: Pointer to the main dir
  * @head_file: Head of the children nodes
  * @next: Pointer to the next parent
+ * @prev: Pointer to the prev parent
  **/
 typedef struct parent_node
 {
@@ -81,12 +82,14 @@ typedef struct parent_node
  * struct _general_info - Contains the global info of the hls command
  *
  * @head_parent: Head of the parent nodes
+ * @head_files: Orphans list files
  * @argc: Number arguments passed
  * @argv: Arguments passed
  **/
 typedef struct _general_info
 {
 	parent_node_t *head_parent;
+	file_node_t *head_files;
 	int argc;
 	char **argv;
 } general_t;
@@ -112,11 +115,15 @@ char *build_path(char *base_path, char *filename);
 void get_upper_filename(file_node_t *node);
 void set_permissions(file_node_t *node, mode_t mode);
 void free_directories(parent_node_t *parent);
-file_node_t *create_file_node(struct dirent *dir, char *base_path);
-void print_directory(parent_node_t *parent);
+file_node_t *create_file_node(char *filename, char *base_path);
 void sorted_insert(file_node_t **head, file_node_t *new_node);
 void sorted_insert2(parent_node_t **head, parent_node_t *new_node);
 void print_parent_node(parent_node_t *node, int is_multi_file);
+
+/* printers */
+void print_list(file_node_t *head);
+void print_directory(parent_node_t *parent);
+void print_files(general_t *info);
 
 /* text utils */
 int _strlen(char *s);

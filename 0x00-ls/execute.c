@@ -37,6 +37,8 @@ int execute_hls(general_t *info)
 		sorted_insert2(&info->head_parent, current);
 	}
 
+	print_files(info);
+
 	head = info->head_parent;
 	while (head)
 	{
@@ -90,8 +92,10 @@ parent_node_t *get_path_nodes(general_t *info, char *path)
 	switch (errno)
 	{
 		case ENOTDIR: /* the filename is not a directory, it's a file */
-			perror("error 2");
-			break;
+			sorted_insert(&info->head_files,
+						  create_file_node(path, ""));
+			free(parent);
+			return (NULL);
 		case ENOENT: /* the filename doesn't exists */
 		case EACCES: /* permissions denied */
 			free(parent);
@@ -101,7 +105,6 @@ parent_node_t *get_path_nodes(general_t *info, char *path)
 
 	parent->filename = path;
 	parent->head_file = NULL;
-
 	parent->next = NULL;
 	parent->prev = NULL;
 
@@ -110,28 +113,11 @@ parent_node_t *get_path_nodes(general_t *info, char *path)
 		if (read->d_name[0] == '.')
 			continue;
 
-		sorted_insert(&parent->head_file, create_file_node(read, parent->filename));
+		sorted_insert(&parent->head_file,
+					  create_file_node(read->d_name, parent->filename));
 	}
 
 	return (parent);
-}
-
-/**
- * print_directory - Print the directory in the short format
- *
- * @parent: Parent node that contains the list of nodes
- */
-void print_directory(parent_node_t *parent)
-{
-	file_node_t *head;
-
-	head = parent->head_file;
-	while (head != NULL)
-	{
-		printf("%s%s", head->filename, head->next == NULL ? "\n" : "  ");
-
-		head = head->next;
-	}
 }
 
 /**

@@ -3,12 +3,12 @@
 /**
  * create_file_node - Create the node
  *
- * @dir: Pointer to the opened file/directory
+ * @filename: Name of the node
  * @base_path: Absolute/relative path of the parent
  *
  * Return: Pointer to a file_node_t struct
  */
-file_node_t *create_file_node(struct dirent *dir, char *base_path)
+file_node_t *create_file_node(char *filename, char *base_path)
 {
 	file_node_t *node;
 
@@ -16,9 +16,11 @@ file_node_t *create_file_node(struct dirent *dir, char *base_path)
 	if (node == NULL)
 		return (NULL);
 
-	node->filename = dir->d_name;
+	node->filename = filename;
 	get_upper_filename(node);
-	get_node_info(node, base_path);
+
+	(void) base_path;
+	/* 	get_node_info(node, base_path);*/
 
 	node->next = NULL;
 	node->prev = NULL;

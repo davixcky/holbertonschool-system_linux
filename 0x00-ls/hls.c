@@ -20,6 +20,7 @@ int main(int argc, char **argv)
 	info->argc = argc;
 	info->argv = argv;
 	info->head_parent = NULL;
+	info->head_files = NULL;
 
 	status_code = execute_hls(info);
 	free(info);
