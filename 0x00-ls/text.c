@@ -80,7 +80,7 @@ char *_strdup(char *str)
 		return (NULL);
 
 	size = _strlen(str) + 1;
-	dest = malloc(size * sizeof(char));
+	dest = malloc(size + 3 * sizeof(char));
 	if (dest == NULL)
 		return (NULL);
 

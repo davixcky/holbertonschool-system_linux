@@ -1,15 +1,31 @@
 #include "hls.h"
 
-#include <string.h>
+/**
+ * execute_hls - General information and state of the hls command
+ *
+ * @info: Struct with the global states
+ *
+ * Return: Errno code
+ */
+int execute_hls(general_t *info)
+{
+	parent_node_t *parent_node;
 
-parent_node_t *get_path_nodes(general_t *info, char *path);
-char get_node_type(mode_t mode);
-void get_node_info(file_node_t *node, char *base_path);
-char *build_path(char *base_path, char *filename);
-void set_permissions(file_node_t *node, mode_t mode);
-void free_directories(parent_node_t *parent);
-void sort_directories(parent_node_t *parent);
+	parent_node = get_path_nodes(info, info->argc > 1 ? info->argv[1] : ".");
+	if (parent_node == NULL)
+		return (errno);
 
+	print_directory(parent_node);
+	free_directories(parent_node);
+	free(parent_node);
+	return (0);
+}
+
+/**
+ * print_directory - Print the directory in the short format
+ *
+ * @parent: Parent node that contains the list of nodes
+ */
 void print_directory(parent_node_t *parent)
 {
 	file_node_t *head;
@@ -17,48 +33,17 @@ void print_directory(parent_node_t *parent)
 	head = parent->head_file;
 	while (head != NULL)
 	{
-		printf("%s%s", head->file_name, head->next == NULL ? "\n" : "  ");
+		printf("%s%s", head->filename, head->next == NULL ? "\n" : "  ");
 
 		head = head->next;
 	}
 }
 
-void sort_directories(parent_node_t *parent) {
-	file_node_t *head, *next, *previous;
-	char *tmp1, *tmp2;
-
-	head = parent->head_file;
-	previous = NULL;
-	while (head != NULL && head->next != NULL) {
-		next = head->next;
-
-		tmp1 = _strdup(head->file_name);
-		tmp2 = _strdup(next->file_name);
-
-		string_toupper(tmp1);
-		string_toupper(tmp2);
-
-		if (_strcmp(tmp1, tmp2) > 0) {
-			printf("cambiando %s %s\n", tmp1, tmp2);
-			head->next = next->next;
-			next->next = head;
-
-			if (previous)
-				previous->next = next;
-
-			if (head == parent->head_file) {
-				parent->head_file = next;
-			}
-		}
-
-		free(tmp1);
-		free(tmp2);
-
-		previous = head;
-		head = next;
-	}
-}
-
+/**
+ * free_directories - Deallocate the spaces allocated for the nodes
+ *
+ * @parent: Parent node that contains the list of nodes
+ */
 void free_directories(parent_node_t *parent)
 {
 	file_node_t *head, *aux;
@@ -72,12 +57,21 @@ void free_directories(parent_node_t *parent)
 		free(aux->user_permissions);
 		free(aux->other_permissions);
 		free(aux->group_permissions);
+		free(aux->filename_upper);
 		free(aux);
 	}
 
 	closedir(parent->dir_stream);
 }
 
+/**
+ * build_path - Allocate the absolute path for the file
+ *
+ * @base_path: Path of the parent directory
+ * @filename: Name of the file
+ *
+ * Return: Absolute path of the file
+ */
 char *build_path(char *base_path, char *filename)
 {
 	char *buff;
@@ -91,9 +85,15 @@ char *build_path(char *base_path, char *filename)
 			base_path[_strlen(base_path) - 1] == '/' ? "" : "/",
 			filename);
 
-	return buff;
+	return (buff);
 }
 
+/**
+ * set_permissions - Detect the permissions group for the node
+ *
+ * @node: Node to calculate the permissions
+ * @mode: Raw permissions values
+ */
 void set_permissions(file_node_t *node, mode_t mode)
 {
 	node_permissions_t *user_permissions, *group_permissions, *other_permissions;
@@ -103,13 +103,15 @@ void set_permissions(file_node_t *node, mode_t mode)
 		return;
 
 	group_permissions = malloc(sizeof(node_permissions_t));
-	if (group_permissions == NULL) {
+	if (group_permissions == NULL)
+	{
 		free(user_permissions);
 		return;
 	}
 
 	other_permissions = malloc(sizeof(node_permissions_t));
-	if (other_permissions == NULL) {
+	if (other_permissions == NULL)
+	{
 		free(user_permissions);
 		free(group_permissions);
 		return;
@@ -132,85 +134,76 @@ void set_permissions(file_node_t *node, mode_t mode)
 	node->other_permissions = other_permissions;
 }
 
-int execute_hls(general_t *info)
+
+
+/**
+ * get_upper_filename - Deallocate the for the node filename in uppercase
+ *
+ * @node: Node to set the upper filename
+ */
+void get_upper_filename(file_node_t *node)
 {
-	parent_node_t *parent_node;
+	char *s;
 
-	parent_node = get_path_nodes(info, info->argc > 1 ? info->argv[1] : ".");
-	if (parent_node == NULL)
-		return (errno);
+	s = _strdup(node->filename);
+	string_toupper(s);
 
-	print_directory(parent_node);
-	free_directories(parent_node);
-	free(parent_node);
-	return (0);
+	node->filename_upper = s;
 }
 
-file_node_t *create_file_node(struct dirent *dir, char *base_path)
+/**
+ * sorted_insert - Insert the node taking in count the order
+ *
+ * @head: Pointer to pointer to the head of the linked list of nodes
+ * @new_node: The new node that is going to be added to the list
+ */
+void sorted_insert(file_node_t **head, file_node_t *new_node)
 {
-	file_node_t *node;
+	file_node_t *current;
 
-	node = malloc(sizeof(file_node_t));
-	if (node == NULL)
-		return (NULL);
+	if (head == NULL)
+		return;
 
-	node->file_name = dir->d_name;
-	get_node_info(node, base_path);
+	if (*head == NULL)
+	{
+		*head = new_node;
+		return;
+	}
 
-	node->next = NULL;
+	if (_strcmp((*head)->filename_upper, new_node->filename_upper) > 0)
+	{
+		new_node->next = *head;
+		new_node->next->previous = new_node;
+		*head = new_node;
+		return;
+	}
 
-	return (node);
+	current = *head;
+	while (current->next != NULL &&
+			_strcmp(current->next->filename_upper, new_node->filename_upper) <= 0)
+		current = current->next;
+
+	new_node->next = current->next;
+	if (current->next != NULL)
+		new_node->next->previous = new_node;
+
+	current->next = new_node;
+	new_node->previous = current;
 }
 
-void get_node_info(file_node_t *node, char *base_path)
-{
-	struct stat sb;
-	char *path;
-
-	path = base_path == NULL ?
-			node->file_name :
-			build_path(base_path, node->file_name);
-
-	lstat(path, &sb);
-
-	node->node_type = get_node_type(sb.st_mode);
-	node->owner_name = getpwuid(sb.st_uid)->pw_name;
-	node->group_name = getgrgid(sb.st_gid)->gr_name;
-	node->last_modification = ctime(&(sb.st_mtime));
-	node->size = sb.st_size;
-	node->number_links = (long) sb.st_nlink;
-
-	set_permissions(node, sb.st_mode);
-
-	if (base_path != NULL)
-		free(path);
-}
-
-char get_node_type(mode_t mode) {
-	int number_types, j;
-	node_type_t types[] = {
-			{S_IFLNK, 'l'},
-			{S_IFSOCK, 's'},
-			{S_IFIFO, 'p'},
-			{S_IFREG, '-'},
-			{S_IFDIR, 'd'},
-			{S_IFCHR, 'c'},
-			{S_IFBLK, 'b'}
-	};
-
-	number_types = sizeof(types) / sizeof(types[0]);
-	for (j = 0; j < number_types; j++)
-		if ((mode & S_IFMT) == types[j].key)
-			return (types[j].type);
-
-	return ('-');
-}
-
+/**
+ * get_path_nodes - Generate all the directories and files for a parent dir
+ *
+ * @info: Struct with the global states
+ * @path: String of the directory to be open
+ *
+ * Return: Parent node that contains the list of nodes
+ */
 parent_node_t *get_path_nodes(general_t *info, char *path)
 {
 	parent_node_t *parent;
 	struct dirent *read;
-	file_node_t *last_node;
+	file_node_t *current;
 
 	if (path == NULL)
 		return (NULL);
@@ -233,30 +226,18 @@ parent_node_t *get_path_nodes(general_t *info, char *path)
 			return (NULL);
 	}
 
-	if (errno != 0)
-	{
-		perror("error here");
-		exit(errno);
-	}
-
 	parent->filename = path;
 	parent->head_file = NULL;
 
-	last_node = NULL;
+	current = NULL;
 
 	while ((read = readdir(parent->dir_stream)) != NULL)
 	{
 		if (read->d_name[0] == '.')
 			continue;
 
-        if (parent->head_file == NULL) {
-            parent->head_file = create_file_node(read, parent->filename);
-			last_node = parent->head_file;
-			 continue;
-		}
-
-		last_node->next = create_file_node(read, parent->filename);
-		last_node = last_node->next;
+		current = create_file_node(read, parent->filename);
+		sorted_insert(&parent->head_file, current);
 	}
 
 	return (parent);
