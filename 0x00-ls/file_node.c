@@ -21,7 +21,7 @@ file_node_t *create_file_node(struct dirent *dir, char *base_path)
 	get_node_info(node, base_path);
 
 	node->next = NULL;
-	node->previous = NULL;
+	node->prev = NULL;
 
 	return (node);
 }
@@ -85,3 +85,63 @@ char get_node_type(mode_t mode)
 	return ('-');
 }
 
+/**
+ * set_permissions - Detect the permissions group for the node
+ *
+ * @node: Node to calculate the permissions
+ * @mode: Raw permissions values
+ */
+void set_permissions(file_node_t *node, mode_t mode)
+{
+	node_permissions_t *user_permissions, *group_permissions, *other_permissions;
+
+	user_permissions = malloc(sizeof(node_permissions_t));
+	if (user_permissions == NULL)
+		return;
+
+	group_permissions = malloc(sizeof(node_permissions_t));
+	if (group_permissions == NULL)
+	{
+		free(user_permissions);
+		return;
+	}
+
+	other_permissions = malloc(sizeof(node_permissions_t));
+	if (other_permissions == NULL)
+	{
+		free(user_permissions);
+		free(group_permissions);
+		return;
+	}
+
+	user_permissions->read = (mode & S_IRUSR) ? 'r' : '-';
+	user_permissions->write = (mode & S_IWUSR) ? 'w' : '-';
+	user_permissions->execute = (mode & S_IXUSR) ? 'x' : '-';
+
+	group_permissions->read = (mode & S_IRGRP) ? 'r' : '-';
+	group_permissions->write = (mode & S_IWGRP) ? 'w' : '-';
+	group_permissions->execute = (mode & S_IXGRP) ? 'x' : '-';
+
+	other_permissions->read = (mode & S_IROTH) ? 'r' : '-';
+	other_permissions->write = (mode & S_IWOTH) ? 'w' : '-';
+	other_permissions->execute = (mode & S_IXOTH) ? 'x' : '-';
+
+	node->user_permissions = user_permissions;
+	node->group_permissions = group_permissions;
+	node->other_permissions = other_permissions;
+}
+
+/**
+ * get_upper_filename - Deallocate the for the node filename in uppercase
+ *
+ * @node: Node to set the upper filename
+ */
+void get_upper_filename(file_node_t *node)
+{
+	char *s;
+
+	s = _strdup(node->filename);
+	string_toupper(s);
+
+	node->filename_upper = s;
+}

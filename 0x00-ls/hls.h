@@ -11,7 +11,6 @@
 #include <grp.h>
 #include <pwd.h>
 
-
 /**
  * struct _node_permissions - Manage octal group 3 unix permissions
  *
@@ -19,7 +18,7 @@
  * @write: Octal value for writing permissions
  * @execute: Octal value for execution permissions
  **/
-typedef struct __attribute__((__packed__))
+typedef struct _node_permissions
 {
 	char read;
 	char write;
@@ -30,14 +29,18 @@ typedef struct __attribute__((__packed__))
  * struct file_node - Symbolize a unique file/dir unix
  *
  * @filename: Unique name that identify the node
+ * @filename_upper: Unique name that identify the code in upper case
  * @size: Node size given in bytes
  * @node_type: It could be r/d/c/b/f/l/s
- * @user: User access permissions
- * @group: Group access permissions
- * @other: Other access permissions
- * @parent: Parent directory if recursion is enabled
+ * @owner_name: Name of the owner
+ * @group_name: Name of the group
+ * @last_modification: Char time of the last modification
+ * @number_links: Numbers links
+ * @user_permissions: User access permissions
+ * @group_permissions: Group access permissions
+ * @other_permissions: Other access permissions
  * @next: Next child in the list
- * @children_list: Head of the file_node if recursively was enabled
+ * @prev: Prev child in the list
  **/
 typedef struct file_node
 {
@@ -53,7 +56,7 @@ typedef struct file_node
 	node_permissions_t *group_permissions;
 	node_permissions_t *other_permissions;
 	struct file_node *next;
-	struct file_node *previous;
+	struct file_node *prev;
 } file_node_t;
 
 /**
@@ -61,8 +64,8 @@ typedef struct file_node
  * will be test and other test2
  *
  * @filename: Unique name that identify the parent
+ * @dir_stream: Pointer to the main dir
  * @head_file: Head of the children nodes
- * @next: Next parent node if exists
  **/
 typedef struct parent_node
 {
@@ -75,11 +78,10 @@ typedef struct parent_node
  * struct _general_info - Contains the global info of the hls command
  *
  * @head_parent: Head of the parent nodes
- * @status_code: Status code of the command
  * @argc: Number arguments passed
  * @argv: Arguments passed
  **/
-typedef struct __attribute__((__packed__))
+typedef struct _general_info
 {
 	parent_node_t *head_parent;
 	int argc;
@@ -87,10 +89,10 @@ typedef struct __attribute__((__packed__))
 } general_t;
 
 /**
- * struct _format - Typedef struct
+ * struct _node_type - Typedef struct
  *
- * @type: Format
- * @f: The function associated
+ * @key: Name of the mode
+ * @type: Value symbol
  **/
 typedef struct _node_type
 {
@@ -98,7 +100,7 @@ typedef struct _node_type
 	char type;
 } node_type_t;
 
-/* execute.c */
+/* execute */
 int execute_hls(general_t *info);
 parent_node_t *get_path_nodes(general_t *info, char *path);
 char get_node_type(mode_t mode);
@@ -109,6 +111,7 @@ void set_permissions(file_node_t *node, mode_t mode);
 void free_directories(parent_node_t *parent);
 file_node_t *create_file_node(struct dirent *dir, char *base_path);
 void print_directory(parent_node_t *parent);
+void sorted_insert(file_node_t **head, file_node_t *new_node);
 
 /* text utils */
 int _strlen(char *s);
