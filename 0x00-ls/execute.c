@@ -84,6 +84,7 @@ void print_parent_node(parent_node_t *node, int is_multi_file)
 	if (is_multi_file)
 		printf("\n");
 	free_directories(node);
+	free(node->filename_upper);
 	free(node);
 }
 
@@ -144,6 +145,7 @@ parent_node_t *get_path_nodes(general_t *info, char *path)
 	}
 
 	parent->filename = path;
+	parent->filename_upper = get_upper_filename(path);
 	get_directories_nodes(parent);
 
 	return (parent);

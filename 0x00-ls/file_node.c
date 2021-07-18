@@ -17,7 +17,7 @@ file_node_t *create_file_node(char *filename, char *base_path)
 		return (NULL);
 
 	node->filename = filename;
-	get_upper_filename(node);
+	node->filename_upper = get_upper_filename(filename);
 
 	(void) base_path;
 	/*get_node_info(node, base_path);*/
@@ -155,12 +155,12 @@ void set_permissions(file_node_t *node, mode_t mode)
  *
  * @node: Node to set the upper filename
  */
-void get_upper_filename(file_node_t *node)
+char *get_upper_filename(char *filename)
 {
 	char *s;
 
-	s = _strdup(node->filename);
+	s = _strdup(filename);
 	string_toupper(s);
 
-	node->filename_upper = s;
+	return (s);
 }

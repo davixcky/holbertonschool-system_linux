@@ -43,7 +43,7 @@ void sorted_insert(file_node_t **head, file_node_t *new_node)
 		return;
 	}
 
-	if (_strcmp((*head)->filename_upper, new_node->filename_upper) > 0)
+	if (_strcmp((*head)->filename_upper, new_node->filename_upper) >= 0)
 	{
 		new_node->next = *head;
 		new_node->next->prev = new_node;

@@ -72,6 +72,7 @@ typedef struct file_node
 typedef struct parent_node
 {
 	char *filename;
+	char *filename_upper;
 	DIR *dir_stream;
 	file_node_t *head_file;
 	struct parent_node *next;
@@ -113,7 +114,7 @@ parent_node_t *get_path_nodes(general_t *info, char *path);
 char get_node_type(mode_t mode);
 void get_node_info(file_node_t *node, char *base_path);
 char *build_path(char *base_path, char *filename);
-void get_upper_filename(file_node_t *node);
+char *get_upper_filename(char *filename);
 void set_permissions(file_node_t *node, mode_t mode);
 void free_directories(parent_node_t *parent);
 file_node_t *create_file_node(char *filename, char *base_path);

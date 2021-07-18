@@ -19,7 +19,7 @@ void sorted_insert2(parent_node_t **head, parent_node_t *new_node)
 		return;
 	}
 
-	if (_strcmp((*head)->filename, new_node->filename) > 0)
+	if (_strcmp((*head)->filename_upper, new_node->filename_upper) > 0)
 	{
 		new_node->next = *head;
 		new_node->next->prev = new_node;
@@ -29,7 +29,7 @@ void sorted_insert2(parent_node_t **head, parent_node_t *new_node)
 
 	current = *head;
 	while (current->next != NULL &&
-		   _strcmp(current->next->filename, new_node->filename) < 0)
+		   _strcmp(current->next->filename_upper, new_node->filename_upper) < 0)
 		current = current->next;
 
 	new_node->next = current->next;
