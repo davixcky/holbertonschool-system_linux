@@ -1,5 +1,10 @@
 #include "hls.h"
 
+/**
+ * execute_directories - Extract the directories for all the nodes
+ *
+ * @info: General info of the hls command
+ */
 void execute_directories(general_t *info)
 {
 	char **aux, *path;
@@ -88,6 +93,11 @@ void print_parent_node(parent_node_t *node, int is_multi_file)
 	free(node);
 }
 
+/**
+ * get_directories_nodes - Get the nodes directories
+ *
+ * @parent: Parent node where the child nodes where go
+ */
 void get_directories_nodes(parent_node_t *parent)
 {
 	struct dirent *read;

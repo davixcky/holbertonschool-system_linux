@@ -153,7 +153,9 @@ void set_permissions(file_node_t *node, mode_t mode)
 /**
  * get_upper_filename - Deallocate the for the node filename in uppercase
  *
- * @node: Node to set the upper filename
+ * @filename: Filename char pointer
+ *
+ * Return: Allocated pointer to the filename in uppercase
  */
 char *get_upper_filename(char *filename)
 {

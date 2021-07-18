@@ -64,6 +64,7 @@ typedef struct file_node
  * will be test and other test2
  *
  * @filename: Unique name that identify the parent
+ * @filename_upper: Unique name that identify the parent in uppercase
  * @dir_stream: Pointer to the main dir
  * @head_file: Head of the children nodes
  * @next: Pointer to the next parent
@@ -84,6 +85,7 @@ typedef struct parent_node
  *
  * @head_parent: Head of the parent nodes
  * @head_files: Orphans list files
+ * @errno_value: Temporary value that holds the errno value
  * @argc: Number arguments passed
  * @argv: Arguments passed
  **/
