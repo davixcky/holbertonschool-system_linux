@@ -14,6 +14,7 @@ int error(general_t info, char *filename)
 	char *command_name = info.argv[0];
 	int index;
 
+	errno = info.errno_value;
 	switch (errno)
 	{
 		case ENOENT:
@@ -28,10 +29,11 @@ int error(general_t info, char *filename)
 			_strlen(text[index]) +
 			_strlen(filename) +
 			6);
-	sprintf(buff, "%s: %s '%s'", command_name, text[index], filename);
+	sprintf(buff, "%s: %s %s", command_name, text[index], filename);
 
 	perror(buff);
 	free(buff);
 
+	errno = 0;
 	return (errno);
 }
