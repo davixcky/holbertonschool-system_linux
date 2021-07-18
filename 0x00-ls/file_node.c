@@ -20,7 +20,7 @@ file_node_t *create_file_node(char *filename, char *base_path)
 	get_upper_filename(node);
 
 	(void) base_path;
-	/* 	get_node_info(node, base_path);*/
+	/*get_node_info(node, base_path);*/
 
 	node->next = NULL;
 	node->prev = NULL;

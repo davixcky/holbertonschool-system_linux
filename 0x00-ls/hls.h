@@ -90,6 +90,7 @@ typedef struct _general_info
 {
 	parent_node_t *head_parent;
 	file_node_t *head_files;
+	int errno_value;
 	int argc;
 	char **argv;
 } general_t;
@@ -123,7 +124,7 @@ void print_parent_node(parent_node_t *node, int is_multi_file);
 /* printers */
 void print_list(file_node_t *head);
 void print_directory(parent_node_t *parent);
-void print_files(general_t *info);
+void print_files(general_t *info, int is_multi_file);
 
 /* text utils */
 int _strlen(char *s);

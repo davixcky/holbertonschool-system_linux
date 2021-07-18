@@ -31,12 +31,12 @@ void print_directory(parent_node_t *parent)
  * print_files - Print the files
  * @info: Global pointer state
  */
-void print_files(general_t *info)
+void print_files(general_t *info, int is_multi_file)
 {
 	file_node_t *tmp, *aux;
 
 	print_list(info->head_files);
-	if (info->head_files)
+	if (info->head_files && is_multi_file)
 		printf("\n");
 
 

@@ -1,26 +1,9 @@
 #include "hls.h"
 
-/**
- * execute_hls - General information and state of the hls command
- *
- * @info: Struct with the global states
- *
- * Return: Errno code
- */
-int execute_hls(general_t *info)
+void execute_directories(general_t *info)
 {
 	char **aux, *path;
 	parent_node_t *current, *head;
-
-	if (info->argc <= 2)
-	{
-		current = get_path_nodes(info, info->argc > 1 ? info->argv[1] : ".");
-		if (current == NULL)
-			return (errno);
-
-		print_parent_node(current, 0);
-		return (0);
-	}
 
 	aux = info->argv;
 	while (*aux)
@@ -37,7 +20,7 @@ int execute_hls(general_t *info)
 		sorted_insert2(&info->head_parent, current);
 	}
 
-	print_files(info);
+	print_files(info, 1);
 
 	head = info->head_parent;
 	while (head)
@@ -46,6 +29,42 @@ int execute_hls(general_t *info)
 		print_parent_node(head, 1);
 		head = current;
 	}
+}
+
+/**
+ * execute_hls - General information and state of the hls command
+ *
+ * @info: Struct with the global states
+ *
+ * Return: Errno code
+ */
+int execute_hls(general_t *info)
+{
+	parent_node_t *current;
+
+	if (info->argc <= 2)
+	{
+		current = get_path_nodes(info, info->argc > 1 ? info->argv[1] : ".");
+		if (current == NULL)
+		{
+			switch (info->errno_value)
+			{
+				case ENOTDIR:
+					print_files(info, 0);
+					return (0);
+				case ENOENT: /* the filename doesn't exists */
+				case EACCES:
+					return (errno);
+			}
+
+			return (errno);
+		}
+
+		print_parent_node(current, 0);
+		return (0);
+	}
+
+	execute_directories(info);
 
 	return (0);
 }
@@ -68,42 +87,10 @@ void print_parent_node(parent_node_t *node, int is_multi_file)
 	free(node);
 }
 
-/**
- * get_path_nodes - Generate all the directories and files for a parent dir
- *
- * @info: Struct with the global states
- * @path: String of the directory to be open
- *
- * Return: Parent node that contains the list of nodes
- */
-parent_node_t *get_path_nodes(general_t *info, char *path)
+void get_directories_nodes(parent_node_t *parent)
 {
-	parent_node_t *parent;
 	struct dirent *read;
 
-	if (path == NULL)
-		return (NULL);
-
-	parent = malloc(sizeof(parent_node_t));
-	if (parent == NULL)
-		return (NULL);
-
-	parent->dir_stream = opendir(path);
-	switch (errno)
-	{
-		case ENOTDIR: /* the filename is not a directory, it's a file */
-			sorted_insert(&info->head_files, create_file_node(path, ""));
-			closedir(parent->dir_stream);
-			free(parent);
-			return (NULL);
-		case ENOENT: /* the filename doesn't exists */
-		case EACCES: /* permissions denied */
-			free(parent);
-			error(*info, path);
-			return (NULL);
-	}
-
-	parent->filename = path;
 	parent->head_file = NULL;
 	parent->next = NULL;
 	parent->prev = NULL;
@@ -116,6 +103,48 @@ parent_node_t *get_path_nodes(general_t *info, char *path)
 		sorted_insert(&parent->head_file,
 					  create_file_node(read->d_name, parent->filename));
 	}
+}
+
+/**
+ * get_path_nodes - Generate all the directories and files for a parent dir
+ *
+ * @info: Struct with the global states
+ * @path: String of the directory to be open
+ *
+ * Return: Parent node that contains the list of nodes
+ */
+parent_node_t *get_path_nodes(general_t *info, char *path)
+{
+	parent_node_t *parent;
+
+	if (path == NULL)
+		return (NULL);
+
+	parent = malloc(sizeof(parent_node_t));
+	if (parent == NULL)
+		return (NULL);
+
+	parent->dir_stream = opendir(path);
+	if (errno)
+	{
+		info->errno_value = errno;
+		errno = 0;
+		switch (info->errno_value)
+		{
+			case ENOTDIR: /* the filename is not a directory, it's a file */
+				sorted_insert(&info->head_files, create_file_node(path, ""));
+				free(parent);
+				return (NULL);
+			case ENOENT: /* the filename doesn't exists */
+			case EACCES: /* permissions denied */
+				free(parent);
+				error(*info, path);
+				return (NULL);
+		}
+	}
+
+	parent->filename = path;
+	get_directories_nodes(parent);
 
 	return (parent);
 }
